@@ -111,12 +111,85 @@ class Model extends BaseModel{
       }
    }
 
+   public function predict($input_data, $options=array())
+   {
+    /* 
+       Makes a prediction based on a number of field values. 
+       By default the input fields must be keyed by field name but you can use  
+       `by_name` to input them directly keyed by id.
+       input_data: Input data to be predicted
 
-   public function predict($input_data, $by_name=true,$print_path=false, $out=STDOUT, $with_confidence=false, $missing_strategy=Tree::LAST_PREDICTION,
+       options array keys:
+
+        by_name: Boolean, true if input_data is keyed by names
+        print_path: Boolean, if true the rules that lead to the prediction
+                    are printed
+        out: output handler
+        with_confidence: Boolean, if true, all the information in the node
+                         (prediction, confidence, distribution and count)
+                         is returned in a list format
+        missing_strategy: LAST_PREDICTION|PROPORTIONAL missing strategy for
+                          missing fields
+        add_confidence: Boolean, if true adds confidence to the dict output
+        add_path: Boolean, if true adds path to the dict output
+        add_distribution: Boolean, if true adds distribution info to the
+                          dict output
+        add_count: Boolean, if true adds the number of instances in the
+                       node to the dict output
+        add_median: Boolean, if true adds the median of the values in
+                    the distribution
+        add_next: Boolean, if true adds the field that determines next
+                  split in the tree
+        add_min: Boolean, if true adds the minimum value in the prediction's
+                 distribution (for regressions only)
+        add_max: Boolean, if true adds the maximum value in the prediction's
+                 distribution (for regressions only)
+        add_unused_fields: Boolean, if true adds the information about the
+                           fields in the input_data that are not being used
+                           in the model as predictors.
+   
+        multiple: For categorical fields, it will return the categories
+                  in the distribution of the predicted node as a
+                  list of arrays:
+                    array(array('prediction' => 'Iris-setosa',
+                      'confidence'=> 0.9154
+                      'probability'=> 0.97
+                      'count'=> 97),
+                     array('prediction'=> 'Iris-virginica',
+                      'confidence'=> 0.0103
+                      'probability'=> 0.03,
+                      'count'=> 3))
+                  The value of this argument can either be an integer
+                  (maximum number of categories to be returned), or the
+                  literal 'all', that will cause the entire distribution
+                  in the node to be returned.     
+    */
+
+    return $this->_predict($input_data, 
+	    	    array_key_exists("by_name", $options) ? $options["by_name"] : true,
+		    array_key_exists("print_path", $options) ? $options["print_path"] : false,
+		    array_key_exists("out", $options) ? $options["out"] : STDOUT,
+		    array_key_exists("with_confidence", $options) ? $options["with_confidence"] : false,
+		    array_key_exists("missing_strategy", $options) ? $options["missing_strategy"] : Tree::LAST_PREDICTION,
+		    array_key_exists("add_confidence", $options) ? $options["add_confidence"] : false,
+		    array_key_exists("add_path", $options) ? $options["add_path"] : false,
+		    array_key_exists("add_distribution", $options) ? $options["add_distribution"] : false,
+		    array_key_exists("add_count", $options) ? $options["add_count"] : false,
+		    array_key_exists("add_median", $options) ? $options["add_median"] : false,
+		    array_key_exists("add_next", $options) ? $options["add_next"] : false,
+		    array_key_exists("add_min", $options) ? $options["add_min"] : false,
+		    array_key_exists("add_max", $options) ? $options["add_max"] : false,
+		    array_key_exists("add_unused_fields", $options) ? $options["add_unused_fields"] : false,
+		    array_key_exists("multiple", $options) ? $options["multiple"] : null
+		   );
+
+   }
+
+   public function _predict($input_data, $by_name=true,$print_path=false, $out=STDOUT, $with_confidence=false, $missing_strategy=Tree::LAST_PREDICTION,
                            $add_confidence=false, $add_path=false,$add_distribution=false,$add_count=false, $add_median=false, $add_next=false,
                            $add_min=false, $add_max=false, $add_unused_fields=false, $multiple=null)
    {
-      /*
+      /* Old Method will be mantenined
          Makes a prediction based on a number of field values.
          By default the input fields must be keyed by field name but you can use
         `by_name` to input them directly keyed by id.

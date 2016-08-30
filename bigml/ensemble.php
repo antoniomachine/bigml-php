@@ -137,7 +137,69 @@ class Ensemble {
       return $this->model_ids;
    }
 
-   function predict($input_data, $by_name=true, $method=MultiVote::PLURALITY_CODE, $with_confidence=false, 
+   function predict($input_data, $options=array()) {
+      /*
+         Makes a prediction based on the prediction made by every model.
+  
+         :param input_data: Test data to be used as input
+
+         Options keys:
+
+         :key by_name: Boolean that is set to true if field_names (as
+                         alternative to field ids) are used in the
+                         input_data dict
+         :key method: numeric key code for the following combination
+                        methods in classifications/regressions:
+
+            0 - majority vote (plurality)/ average: PLURALITY_CODE
+            1 - confidence weighted majority vote / error weighted:
+               CONFIDENCE_CODE
+            2 - probability weighted majority vote / average:
+               PROBABILITY_CODE
+            3 - threshold filtered vote / doesn't apply:
+               THRESHOLD_CODE
+
+         The following parameter causes the result to be returned as a list
+          :key add_confidence: Adds confidence to the prediction
+          :key add_distribution: Adds the predicted node's distribution to the prediction
+          :key add_count: Adds the predicted nodes' instances to the prediction
+          :key add_median: Adds the median of the predicted nodes' distribution
+                             to the prediction
+          :key add_min: Boolean, if true adds the minimum value in the
+                                  prediction's distribution (for regressions only)
+          :key add_max: Boolean, if true adds the maximum value in the
+                        prediction's distribution (for regressions only)
+          :key add_unused_fields: Boolean, if true adds the information about
+                                  the fields in the input_data that are not
+                                  being used in the model as predictors.
+          :key options: Options to be used in threshold filtered votes.
+          :key missing_strategy: numeric key for the individual model's
+                                 prediction method. See the model predict
+                                 method.
+          :key median: Uses the median of each individual model's predicted
+                       node as individual prediction for the specified
+                       combination method.                                
+      */
+
+
+      return $this->_predict($input_data,
+                             array_key_exists("by_name", $options) ? $options["by_name"] : true,
+                             array_key_exists("method", $options) ? $options["method"] : MultiVote::PLURALITY_CODE,
+                             array_key_exists("with_confidence", $options) ? $options["with_confidence"] : false,
+                             array_key_exists("add_confidence", $options) ? $options["add_confidence"] : false,
+                             array_key_exists("add_distribution", $options) ? $options["add_distribution"] : false,
+                             array_key_exists("add_count", $options) ? $options["add_count"] : false,
+                             array_key_exists("add_median", $options) ? $options["add_median"] : false,
+                             array_key_exists("add_unused_fields", $options) ? $options["add_unused_fields"] : false,
+                             array_key_exists("add_min", $options) ? $options["add_min"] : false,
+                             array_key_exists("add_max", $options) ? $options["add_max"] : false,
+                             array_key_exists("options", $options) ? $options["options"] : null,
+                             array_key_exists("missing_strategy", $options) ? $options["missing_strategy"] : Tree::LAST_PREDICTION,
+                             array_key_exists("median", $options) ? $options["median"] : false
+                            );
+   }
+
+   function _predict($input_data, $by_name=true, $method=MultiVote::PLURALITY_CODE, $with_confidence=false, 
                     $add_confidence=false, $add_distribution=false, $add_count=false, $add_median=false, $add_unused_fields=false,
 		    $add_min=false, $add_max=false, $options=null, $missing_strategy=Tree::LAST_PREDICTION, $median=false) {
 

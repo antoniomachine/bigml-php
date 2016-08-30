@@ -2349,6 +2349,54 @@ Once you have a local model you can use to generate predictions locally::
 
     $prediction = $local_model->predict(array("petal length"=> 3, "petal width"=> 1));
 
+Note: Before method predict now is _predict::
+
+    function predict($input_data, $options=array()) 
+
+Options:
+
+-  **by_name**: Boolean, true if input_data is keyed by names
+-  **print_path**: Boolean, if true the rules that lead to the prediction are printed
+-  **out**:  output handler
+-  **with_confidence**: Boolean, if true, all the information in the node
+                        (prediction, confidence, distribution and count)
+                        is returned in a list format
+-  **missing_strategy**: LAST_PREDICTION|PROPORTIONAL missing strategy for
+                          missing fields
+-  **add_confidence**: Boolean, if true adds confidence to the dict output 
+-  **add_path**:  Boolean, if true adds path to the dict output
+-  **add_distribution**: Boolean, if true adds distribution info to the
+                          dict output
+-  **add_count**: Boolean, if true adds the number of instances in the
+                     node to the dict output
+-  **add_median**: Boolean, if true adds the median of the values in
+                    the distribution
+-  **add_next**: Boolean, if true adds the field that determines next
+                  split in the tree
+-  **add_min**: Boolean, if true adds the minimum value in the prediction's
+                 distribution (for regressions only)
+-  **add_max**: Boolean, if true adds the maximum value in the prediction's
+                 distribution (for regressions only)
+-  **add_unused_fields**: Boolean, if true adds the information about the
+                           fields in the input_data that are not being used
+                           in the model as predictors.
+-  **multiple**: For categorical fields, it will return the categories
+                  in the distribution of the predicted node as a
+                  list of arrays:
+                    array(array('prediction' => 'Iris-setosa',
+                      'confidence'=> 0.9154
+                      'probability'=> 0.97
+                      'count'=> 97),
+                     array('prediction'=> 'Iris-virginica',
+                      'confidence'=> 0.0103
+                      'probability'=> 0.03,
+                      'count'=> 3))
+                  The value of this argument can either be an integer
+                  (maximum number of categories to be returned), or the
+                  literal 'all', that will cause the entire distribution
+                  in the node to be returned.
+
+
 Local predictions have three clear advantages:
     
 - Removing the dependency from BigML to make new predictions.
@@ -2457,11 +2505,11 @@ The combination method used by default is plurality for categorical predictions 
 
 confidence weighted::
     
-    $prediction = $multimodel->predict(array("petal length"=> 3, "petal width"=> 1), 1);  
+    $prediction = $multimodel->predict(array("petal length"=> 3, "petal width"=> 1), array('method' => 1));  
         
 that will weight each vote using the confidence/error given by the model to each prediction, or even probability weighted::
 
-    $prediction = $multimodel->predict(array("petal length"=> 3, "petal width"=> 1), 2); 
+    $prediction = $multimodel->predict(array("petal length"=> 3, "petal width"=> 1), array('method' => 2)); 
 
 that weights each vote by using the probability associated to the training distribution at the prediction node.
 
@@ -2472,7 +2520,9 @@ Otherwise, the prediction is plurality for the rest of predicted values.
 
 An example of threshold combination method would be::
 
-    $prediction = $multimodel->predict(array("petal length"=> 3, "petal width"=> 1), 3, false, array('threshold'=> 3, 'category'=> 'Iris-virginica'));    
+    $prediction = $multimodel->predict(array("petal length"=> 3, "petal width"=> 1), array('method' => 3,
+                                                                                           'options => array('threshold' => 3, 
+                                                                                                          'category' => 'Iris-virginica'))); 
 
 When making predictions on a test set with a large number of models, batch_predict can be useful to log each model’s predictions in a separated file. 
 It expects a list of input data values and the directory path to save the prediction files in::
@@ -2484,7 +2534,7 @@ For instance, when using model/50c0de043b563519830001c2 to predict, the output f
 An additional feature is that using reuse=True as argument will force the function to skip the creation of the file if it already exists. 
 This can be helpful when using repeatedly a bunch of models on the same test set::
 
-    $multimodel->batch_predict(array("petal length"=> 3, "petal width"=> 1, "petal length"=> 1, "petal width"=> 5.1), "data/predictions", true, true);
+    $multimodel->batch_predict(array("petal length"=> 3, "petal width"=> 1, "petal length"=> 1, "petal width"=> 5.1), "data/predictions", array('reuse' => true));
 
 
 Prediction files can be subsequently retrieved and converted into a votes list using batch_votes::
@@ -2540,7 +2590,7 @@ As in MultipleModel, several prediction combination methods are available, and y
 
     $ensemble = new Ensemble($ensemble, $api); 
 
-    $ensemble->predict(array("petal length"=>3, "petal width"=> 1), true, 1);
+    $ensemble->predict(array("petal length"=>3, "petal width"=> 1), array('method' => 1));
 
 
 creates a new ensemble and stores its information in ./storagedirectory folder. Then this information is used to predict locally using the confidence weighted method.

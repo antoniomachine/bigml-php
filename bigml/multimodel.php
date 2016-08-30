@@ -109,7 +109,33 @@ class MultiModel{
       }
    }
 
-   public function predict($input_data, $by_name=true, $method=MultiVote::PLURALITY_CODE, 
+   public function predict($input_data, $options=array()) {
+
+     /*
+         Makes a prediction based on the prediction made by every model. The method parameter is a numeric key to the following combination methods in classifications/regressions:
+         0 - majority vote (plurality)/ average: PLURALITY_CODE
+         1 - confidence weighted majority vote / error weighted: CONFIDENCE_CODE
+         2 - probability weighted majority vote / average: PROBABILITY_CODE
+         3 - threshold filtered vote / doesn't apply: THRESHOLD_COD
+      */
+
+     return $this->_predict($input_data,
+                            array_key_exists("by_name", $options) ? $options["by_name"] : true,
+                            array_key_exists("method", $options) ?  $options["method"] : MultiVote::PLURALITY_CODE,
+                            array_key_exists("with_confidence", $options) ?  $options["with_confidence"] : false,
+                            array_key_exists("options", $options) ?  $options["options"] : null,
+                            array_key_exists("missing_strategy", $options) ? $options["missing_strategy"] : Tree::LAST_PREDICTION,
+                            array_key_exists("add_confidence", $options) ? $options["add_confidence"] : false,
+                            array_key_exists("add_distribution", $options) ? $options["add_distribution"] : false,
+                            array_key_exists("add_count", $options) ? $options["add_count"] : false,
+                            array_key_exists("add_median", $options) ? $options["add_median"] : false,
+                            array_key_exists("add_min", $options) ? $options["add_min"] : false,
+                            array_key_exists("add_max", $options) ? $options["add_max"] : false,
+                            array_key_exists("add_unused_fields", $options) ? $options["add_unused_fields"] : false);
+
+   }
+
+   public function _predict($input_data, $by_name=true, $method=MultiVote::PLURALITY_CODE, 
                            $with_confidence=false, $options=null, $missing_strategy=Tree::LAST_PREDICTION,
 			   $add_confidence=false, $add_distribution=false, $add_count=false, 
 			   $add_median=false, $add_min=false, $add_max=false, $add_unused_fields=false) {
@@ -145,7 +171,34 @@ class MultiModel{
 
    }
 
-   public function batch_predict($input_data_list, $output_file_path=null, $by_name=true, $reuse=false, 
+   public function batch_predict($input_data_list, $output_file_path=null, $options=array()) {
+
+      /*
+      Makes predictions for a list of input data.
+
+           When the to_file argument is set to True, the predictions
+           generated for each model are stored in an output
+           file. The name of the file will use the following syntax:
+                model_[id of the model]__predictions.csv
+           For instance, when using model/50c0de043b563519830001c2 to predict,
+           the output file name will be
+                model_50c0de043b563519830001c2__predictions.csv
+            On the contrary, if it is False, the function returns a list
+            of MultiVote objects with the model's predictions. 
+      */
+
+      return $this->_batch_predict($input_data_list,
+                            $output_file_path,
+                            array_key_exists("by_name", $options) ?  $options["by_name"] : true,
+                            array_key_exists("reuse", $options) ?  $options["reuse"] : false,
+                            array_key_exists("missing_strategy", $options) ? $options["missing_strategy"] : Tree::LAST_PREDICTION,
+                            array_key_exists("headers", $options) ? $options["headers"] : null,
+                            array_key_exists("to_file", $options) ? $options["to_file"] : true,
+                            array_key_exists("use_median", $options) ? $options["use_median"] : false);
+
+   }
+
+   public function _batch_predict($input_data_list, $output_file_path=null, $by_name=true, $reuse=false, 
                                  $missing_strategy=Tree::LAST_PREDICTION, $headers=null, $to_file=true, $use_median=false) {
       /*
          Makes predictions for a list of input data.
@@ -202,7 +255,7 @@ class MultiModel{
 	       // TODO
 	    }
 
-	    $prediction = $model->predict($input_data, $by_name, false, STDOUT, true, $missing_strategy);
+	    $prediction = $model->_predict($input_data, $by_name, false, STDOUT, true, $missing_strategy);
            
 	    if ($use_median && $model->tree->regression) {
 	      $prediction[0] = array_slice($prediction, -1);
@@ -261,7 +314,7 @@ class MultiModel{
 
       
       foreach ($this->models as $model) {
-         $prediction_info = $model->predict($input_data, $by_name, false, STDOUT, false, 
+         $prediction_info = $model->_predict($input_data, $by_name, false, STDOUT, false, 
                                             $missing_strategy, true, false, true, true, $add_median,
                                             false, $add_min, $add_max, $add_unused_fields, null);
          $votes->append($prediction_info);

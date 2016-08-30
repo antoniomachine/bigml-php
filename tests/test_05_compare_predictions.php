@@ -296,8 +296,9 @@ class BigMLTestComparePredictions extends PHPUnit_Framework_TestCase
             $this->assertEquals($item["prediction"], $prediction->object->prediction->{$item["objective"]});
 
             print "And I create a local prediction for " .  json_encode($item["data_input"]) . "\n";
-            $prediction = $localmodel->predict($item["data_input"], true, false, STDOUT, true, 1);
-
+            $prediction = $localmodel->predict($item["data_input"], array('with_confidence' => true, 
+	                                                                  'missing_strategy' => Tree::PROPORTIONAL)); 
+	    
             print "Then the local prediction is  " . $item["prediction"] . "\n";
 	    $prediction_value = null;
 	    $confidence_value = null;
@@ -565,7 +566,8 @@ class BigMLTestComparePredictions extends PHPUnit_Framework_TestCase
           $this->assertEquals(round($item["confidence"], 4), round($prediction->object->confidence, 4));
 
           print "And I create a proportional missing strategy local prediction for " . json_encode($item["data_input"]) . "\n";
-          $local_prediction = $local_model->predict($item["data_input"], true, false, STDOUT, true, 1);
+          $local_prediction = $local_model->predict($item["data_input"], array('with_confidence' => true, 
+	                                                                       'missing_strategy' => Tree::PROPORTIONAL)); 
 
           $confidence_value = null;
 	  $prediction_value = null;
@@ -960,7 +962,9 @@ class BigMLTestComparePredictions extends PHPUnit_Framework_TestCase
 	 $localmodel = new Model($model->resource, self::$api);
 
          print "And I create a proportional missing strategy local prediction for ". json_encode($item["data_input"]) . "\n";
-         $local_prediction = $localmodel->predict($item["data_input"], true, false, STDOUT, true, 1);
+
+         $local_prediction = $localmodel->predict($item["data_input"], array('with_confidence' => true, 
+	                                                                     'missing_strategy' => Tree::PROPORTIONAL)); 
 
 	 if (is_object($local_prediction)) {
            $prediction_value  = $local_prediction->output;
@@ -1119,7 +1123,8 @@ class BigMLTestComparePredictions extends PHPUnit_Framework_TestCase
            $this->assertEquals(round($item["confidence"], 4), round($prediction->object->confidence, 4)); 
 
            print "And I create a proportional missing strategy local prediction for ". json_encode($item["data_input"]) . "\n";
-           $local_prediction = $localmodel->predict($item["data_input"], true, false, STDOUT, true, 1);
+           $local_prediction = $localmodel->predict($item["data_input"], array('with_confidence' => true, 
+	                                                                       'missing_strategy' => Tree::PROPORTIONAL)); 
 
            $confidence_value = null;
            $prediction_value = null;
